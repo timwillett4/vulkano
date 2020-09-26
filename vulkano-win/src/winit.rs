@@ -131,9 +131,14 @@ unsafe fn winit_to_surface<W: SafeBorrow<Window>>(
     instance: Arc<Instance>,
     win: W,
 ) -> Result<Arc<Surface<W>>, SurfaceCreationError> {
-    use winit::platform::android::WindowExtAndroid;
 
-    Surface::from_anativewindow(instance, win.borrow().native_window(), win)
+    use raw_window_handle::HasRawWindowHandle;
+    use raw_window_handle::RawWindowHandle;
+
+    match win.borrow().raw_window_handle() {
+        RawWindowHandle::Android(handle) => Surface::from_anativewindow(instance, handle.a_native_window, win),
+        _ => unimplemented!("Unimplemented handle type"),
+    }
 }
 
 #[cfg(all(unix, not(target_os = "android"), not(target_os = "macos")))]
